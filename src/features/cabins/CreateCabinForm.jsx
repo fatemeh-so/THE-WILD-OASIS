@@ -46,14 +46,28 @@ const Error = styled.span`
   color: var(--color-red-700);
 `;
 
-function CreateCabinForm() {
-  const { register, handleSubmit, reset, formState, getValues } = useForm();
+function CreateCabinForm({ cabinToEdit = {} }) {
+  const { id: editId, ...editValues } = cabinToEdit;
+
+  const editSession = Boolean(editId);
+  const { register, handleSubmit, reset, formState, getValues } = useForm({
+    defaultValues:editSession?editValues:{}
+  });
 
   const queryClient = useQueryClient();
   const { errors } = formState;
   // console.log(errors);
-  const { mutate, isLoading } = useMutation({
+  const { mutate:createCabin1, isLoading:isCreating } = useMutation({
     mutationFn: createCabins,
+    onSuccess: () => {
+      toast.success("New cabin successfully created");
+      queryClient.invalidateQueries({ queryKey: ["cabins"] });
+      reset();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+  const { mutate:editCabin, isLoading } = useMutation({
+    mutationFn: ({ newCabinData, id }) => createCabins(newCabinData, id),
     onSuccess: () => {
       toast.success("New cabin successfully created");
       queryClient.invalidateQueries({ queryKey: ["cabins"] });
@@ -63,9 +77,12 @@ function CreateCabinForm() {
   });
 
   function onSubmit(data) {
+    const image=typeof data.image==="string"? data.image : data.image[0];
     // mutate(data);
-    // console.log(watch("name"));
-    mutate({ ...data, image: data.image[0] });
+    // console.log(wat);
+    console.log(data);
+    if(editId)editCabin(  { newCabinData: { ...data, image }, id: editId })
+    else createCabin1({ ...data, image:image});
   }
   function onError(errors) {
     console.log(errors);
@@ -140,9 +157,8 @@ function CreateCabinForm() {
         <FileInput
           id="image"
           accept="image/*"
-          type="file"
           {...register("image", {
-            required: "This field is required",
+            required: editSession ? false : "This field is required",
           })}
         />
       </FormRow>
