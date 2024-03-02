@@ -1,24 +1,26 @@
 /* eslint-disable react/prop-types */
 import styled from "styled-components";
 import { formatCurrency } from "../../utils/helpers";
-import { deleteCabin } from "../../services/apiCabin";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
+
 import { useState } from "react";
 import CreateCabinForm from "./CreateCabinForm";
+import { useDeleteCabin } from "./useDeleteCabin";
+import { useCreateCabin } from "./useCreateCabin";
+import Modal from "../../ui/Modal";
+import ConfirmDelete from "../../ui/ConfirmDelete";
+import Table from "../../ui/Table";
 
-// import Button from '../../ui/Button'
-const TableRow = styled.div`
-  display: grid;
-  grid-template-columns: 0.6fr 1.8fr 2.2fr 1fr 1fr 1fr;
-  column-gap: 2.4rem;
-  align-items: center;
-  padding: 1.4rem 2.4rem;
+// const TableRow = styled.div`
+//   display: grid;
+//   grid-template-columns: 0.6fr 1.8fr 2.2fr 1fr 1fr 1fr;
+//   column-gap: 2.4rem;
+//   align-items: center;
+//   padding: 1.4rem 2.4rem;
 
-  &:not(:last-child) {
-    border-bottom: 1px solid var(--color-grey-100);
-  }
-`;
+//   &:not(:last-child) {
+//     border-bottom: 1px solid var(--color-grey-100);
+//   }
+// `;
 
 const Img = styled.img`
   display: block;
@@ -47,7 +49,6 @@ const Discount = styled.div`
   color: var(--color-green-700);
 `;
 function CabinRow({ cabin }) {
-  const [showForm, setShowForm] = useState(false);
   const {
     name,
     image,
@@ -55,34 +56,56 @@ function CabinRow({ cabin }) {
     regularPrice,
     maxCapacity,
     id: cabinId,
+    description,
   } = cabin;
-  const queryClient = useQueryClient();
-  const { isLoading, mutate } = useMutation({
-    mutationFn: deleteCabin,
-    onSuccess: () => {
-      toast.success(" cabin Successfully deleted!");
-      queryClient.invalidateQueries({ queryKey: ["cabins"] });
-    },
-    onError: (err) => {
-      toast.error(err.message);
-    },
-  });
+
+  const [showForm, setShowForm] = useState(false);
+  const { createCabin1, isCreating } = useCreateCabin();
+  function handelDuplicate() {
+    createCabin1({
+      name: `copy of ${name}`,
+      image,
+      discount,
+      regularPrice,
+      maxCapacity,
+      description,
+    });
+  }
+
+  const { isLoading, mutate: deleteCabin } = useDeleteCabin();
+
   return (
     <div>
-      <TableRow role="row">
+      <Table.Row >
         <Img src={image} />
         <Cabin>{name}</Cabin>
         <div>Fits up tp {maxCapacity} quests</div>
         <Price>{formatCurrency(regularPrice)}</Price>
         <Discount>{formatCurrency(discount)}</Discount>
         <div>
-          <button onClick={() => setShowForm((show) => !show)}>Edit</button>/
-          <button disabled={isLoading} onClick={() => mutate(cabinId)}>
-            delete
+          <button disabled={isCreating} onClick={handelDuplicate}>
+            dup
           </button>
+          <Modal>
+            <Modal.Open opens="edit">
+              <button>/Edit/</button>
+            </Modal.Open>
+            <Modal.Window name="edit">
+              <CreateCabinForm cabinToEdit={cabin} />
+            </Modal.Window>
+            <Modal.Open opens="delete">
+              <button>delete</button>
+            </Modal.Open>
+            <Modal.Window name="delete">
+              <ConfirmDelete
+                resourceName="cabins"
+                disabled={isLoading}
+                onConfirm={() => deleteCabin(cabinId)}
+              />
+            </Modal.Window>
+          </Modal>
         </div>
-      </TableRow>
-      {showForm && <CreateCabinForm cabinToEdit={cabin} />}
+      </Table.Row>
     </div>
   );
 }
