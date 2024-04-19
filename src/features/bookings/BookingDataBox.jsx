@@ -9,8 +9,11 @@ import {
 
 import DataItem from "../../ui/DataItem";
 import { Flag } from "../../ui/Flag";
+import Checkbox from "../../ui/Checkbox";
 
 import { formatDistanceFromNow, formatCurrency } from "../../utils/helpers";
+import Tag from "../../ui/Tag";
+import { useState } from "react";
 
 const StyledBookingDataBox = styled.section`
   /* Box */
@@ -118,7 +121,6 @@ function BookingDataBox({ booking }) {
     guests: { fullName: guestName, email, country, countryFlag, nationalID },
     cabins: { name: cabinName },
   } = booking;
-
   return (
     <StyledBookingDataBox>
       <Header>
@@ -175,8 +177,9 @@ function BookingDataBox({ booking }) {
 
           <p>{isPaid ? "Paid" : "Will pay at property"}</p>
         </Price>
-      </Section>
 
+     
+      </Section>
       <Footer>
         <p>Booked {format(new Date(created_at), "EEE, MMM dd yyyy, p")}</p>
       </Footer>

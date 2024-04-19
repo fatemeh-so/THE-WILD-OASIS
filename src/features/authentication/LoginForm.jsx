@@ -3,12 +3,17 @@ import Button from "../../ui/Button";
 import Form from "../../ui/Form";
 import Input from "../../ui/Input";
 import FormRowVertical from "../../ui/FormRowVertical";
+import { useLogin } from "./useLogin";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  function handleSubmit() {}
+  const { mutate: login, isLoading: isLogging } = useLogin();
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (!email || !password) return;
+    login({ email, password });
+  }
 
   return (
     <Form onSubmit={handleSubmit}>
@@ -20,10 +25,12 @@ function LoginForm() {
           autoComplete="username"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          disabled={isLogging}
         />
       </FormRowVertical>
       <FormRowVertical label="Password">
         <Input
+          disabled={isLogging}
           type="password"
           id="password"
           autoComplete="current-password"

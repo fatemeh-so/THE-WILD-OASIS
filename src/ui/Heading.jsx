@@ -20,7 +20,15 @@ const Heading = styled.h1`
       font-weight: 500;
     `}
     
-`;
+    ${(props) =>
+    props.as === "h4" &&
+    css`
+      font: 3rem;
+      font-weight: 600;
+      text-align: center;
+    `}
+`
+;
 Heading.defaultProps={
     as:"h3"
 }

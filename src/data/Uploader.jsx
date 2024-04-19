@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { isFuture, isPast, isToday } from "date-fns";
-import supabase from "../services/supabase";
+import supabase from "../../supabase";
 import Button from "../ui/Button";
 import { subtractDates } from "../utils/helpers";
 
@@ -16,6 +16,7 @@ import { guests } from "./data-guests";
 // };
 
 async function deleteGuests() {
+  // gt means greater than
   const { error } = await supabase.from("guests").delete().gt("id", 0);
   if (error) console.log(error.message);
 }
@@ -41,7 +42,9 @@ async function createCabins() {
 }
 
 async function createBookings() {
-  // Bookings need a guestId and a cabinId. We can't tell Supabase IDs for each object, it will calculate them on its own. So it might be different for different people, especially after multiple uploads. Therefore, we need to first get all guestIds and cabinIds, and then replace the original IDs in the booking data with the actual ones from the DB
+  // Bookings need a guestId and a cabinId. We can't tell Supabase IDs for each object, it will calculate them on its own.
+  // So it might be different for different people, especially after multiple uploads.
+  // Therefore, we need to first get all guestIds and cabinIds, and then replace the original IDs in the booking data with the actual ones from the DB
   const { data: guestsIds } = await supabase
     .from("guests")
     .select("id")
@@ -56,6 +59,7 @@ async function createBookings() {
   const finalBookings = bookings.map((booking) => {
     // Here relying on the order of cabins, as they don't have and ID yet
     const cabin = cabins.at(booking.cabinId - 1);
+    // console.log(cabin,booking.cabinId);
     const numNights = subtractDates(booking.endDate, booking.startDate);
     const cabinPrice = numNights * (cabin.regularPrice - cabin.discount);
     const extrasPrice = booking.hasBreakfast
