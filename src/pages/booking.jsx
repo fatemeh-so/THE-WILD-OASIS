@@ -1,5 +1,5 @@
 import BookingDetail from "../features/bookings/BookingDetail"
-function booking() {
+function Booking() {
     return (
       
         <BookingDetail/>
@@ -7,4 +7,4 @@ function booking() {
     )
 }
 
-export default booking
+export default Booking
